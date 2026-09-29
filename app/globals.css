@@ -1,0 +1,179 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0B1120;
+  --foreground: #F8FAFC;
+  --card-bg: rgba(15, 23, 42, 0.85);
+  --card-border: rgba(212, 175, 55, 0.25);
+  --card-hover-border: rgba(212, 175, 55, 0.65);
+  --oxford-navy: #090D16;
+  --oxford-blue: #0F172A;
+  --royal-maroon: #581C28;
+  --crimson-deep: #3B0B14;
+  --antique-gold: #D4AF37;
+  --gold-champagne: #F3E5AB;
+  --gold-glow: #FDE047;
+  --sand-ivory: #F8FAFC;
+  --parchment-border: #1E293B;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background-color: #070B14;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(212, 175, 55, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(88, 28, 40, 0.15) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(15, 23, 42, 0.5) 0px, transparent 50%),
+    radial-gradient(rgba(212, 175, 55, 0.06) 1px, transparent 0);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 28px 28px;
+  background-attachment: fixed;
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-classic {
+  font-family: var(--font-classic), 'Cinzel', 'Playfair Display', Georgia, serif;
+}
+
+.font-sans {
+  font-family: var(--font-sans), 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+a {
+  text-decoration: none;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Custom Sleek Gold Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #090D16;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D4AF37;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #F5D77F;
+}
+
+/* Luxury Glassmorphic Neo-Modern Card */
+.classic-card {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), 0 0 20px -5px rgba(212, 175, 55, 0.05);
+}
+
+.classic-card-hover {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.classic-card-hover:hover {
+  transform: translateY(-4px);
+  border-color: rgba(212, 175, 55, 0.6);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7), 0 0 25px 2px rgba(212, 175, 55, 0.18);
+}
+
+/* Luxury Gold Foil Gradient Text */
+.gold-foil-text {
+  background: linear-gradient(135deg, #FFE082 0%, #D4AF37 40%, #FFF8DC 70%, #AA771C 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.royal-header-gradient {
+  background: linear-gradient(135deg, #090D16 0%, #0F172A 40%, #3B0B14 80%, #581C28 100%);
+}
+
+.classic-gold-border {
+  border: 1px solid #D4AF37;
+}
+
+.classic-gold-accent {
+  box-shadow: inset 0 0 0 1px rgba(212, 175, 55, 0.4);
+}
+
+/* Neon Glow Utilities */
+.glow-gold {
+  box-shadow: 0 0 20px -3px rgba(212, 175, 55, 0.35);
+}
+
+.glow-emerald {
+  box-shadow: 0 0 20px -3px rgba(16, 185, 129, 0.35);
+}
+
+.glow-cyan {
+  box-shadow: 0 0 20px -3px rgba(6, 182, 212, 0.35);
+}
+
+.glow-maroon {
+  box-shadow: 0 0 20px -3px rgba(140, 34, 52, 0.4);
+}
+
+/* Shimmer Animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer-badge {
+  background: linear-gradient(90deg, rgba(212, 175, 55, 0.15) 0%, rgba(253, 224, 71, 0.35) 50%, rgba(212, 175, 55, 0.15) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 3s infinite linear;
+}
+
+/* Radar Pulse Animation */
+@keyframes radar-pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+.radar-live-ring {
+  animation: radar-pulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+/* Print Clean Optimization */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  aside, header, nav, button, .print-hidden {
+    display: none !important;
+  }
+}
