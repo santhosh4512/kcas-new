@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import { useSearchParams } from 'next/navigation';
 import api from '../../lib/api';
@@ -28,7 +28,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-export default function ProgressReportPage() {
+function ProgressReportContent() {
   const { user } = useAuth();
   const searchParams = useSearchParams();
   const studentIdParam = searchParams.get('studentId');
@@ -426,5 +426,14 @@ export default function ProgressReportPage() {
         )}
       </div>
     </DashboardLayout>
+  );
+}
+
+// useSearchParams() must sit under a Suspense boundary so the route can be prerendered
+export default function ProgressReportPage() {
+  return (
+    <Suspense fallback={null}>
+      <ProgressReportContent />
+    </Suspense>
   );
 }
