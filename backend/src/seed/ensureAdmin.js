@@ -120,6 +120,34 @@ async function ensureDefaultAdmin() {
       console.log(`✅ Faculty (kanimozhi@kcas.edu.in) created.`);
     }
 
+    let santhoshFaculty = await User.findOne({ email: 'santhoshsiva754@gmail.com' }).select('+password');
+    if (!santhoshFaculty) {
+      await User.create({
+        name: 'Santhosh Siva (Faculty Mentor & Staff Alert)',
+        email: 'santhoshsiva754@gmail.com',
+        password: 'Faculty@123',
+        role: 'faculty',
+        designation: 'Staff Mentor & Geofence Coordinator',
+        referenceId: kanimozhiFac?._id,
+        roleRefModel: 'Faculty',
+        status: 'Active',
+        mustChangePassword: false,
+        permissions: [
+          'view_students',
+          'edit_students',
+          'view_attendance',
+          'manage_attendance',
+          'view_marks',
+          'manage_marks',
+          'view_talent',
+          'manage_talent',
+          'view_reports',
+          'export_reports',
+        ],
+      });
+      console.log(`✅ Faculty Mentor (santhoshsiva754@gmail.com) created.`);
+    }
+
     // 4. Student Accounts linked to Varshini S (23BCS001)
     const varshiniStudent = await Student.findOne({ registerNumber: '23BCS001' });
 

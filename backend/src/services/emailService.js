@@ -15,7 +15,7 @@ async function sendGpsAlertEmail({
   allowedRadius = 1000,
   gpsStatus = 'Outside Permitted Location',
   alertType = 'ATTENDANCE_LOCATION_VIOLATION',
-  recipientEmail = 'faculty@kcas.edu.in',
+  recipientEmail = process.env.ALERT_RECIPIENT_EMAIL || 'santhoshsiva754@gmail.com',
   facultyName = 'Assigned Faculty Mentor',
 }) {
   const distanceKm = (Number(distanceMeters) / 1000).toFixed(2);

@@ -415,7 +415,7 @@ exports.submitGeoCheckin = async (req, res, next) => {
       // Resolve faculty mentor
       let assignedFacultyId = null;
       let assignedFacultyName = 'Dr. S. Kanimozhi (Faculty Mentor)';
-      let assignedFacultyEmail = 'faculty@kcas.edu.in';
+      let assignedFacultyEmail = process.env.ALERT_RECIPIENT_EMAIL || 'santhoshsiva754@gmail.com';
 
       if (targetStudent.mentor && targetStudent.mentor._id) {
         assignedFacultyId = targetStudent.mentor._id;
@@ -637,7 +637,7 @@ exports.monitorCollegeHoursLocation = async (req, res, next) => {
 
       if (!recentAlert) {
         const facName = student.mentor?.name || 'Dr. S. Kanimozhi (Faculty Mentor)';
-        const facEmail = student.mentor?.email || 'faculty@kcas.edu.in';
+        const facEmail = student.mentor?.email || process.env.ALERT_RECIPIENT_EMAIL || 'santhoshsiva754@gmail.com';
 
         await LocationAlert.create({
           student: student._id,
