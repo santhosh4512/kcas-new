@@ -63,6 +63,7 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const { success, error, warning } = useNotification();
   const [stats, setStats] = useState(null);
+  const [locationAlerts, setLocationAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isCommandOpen, setIsCommandOpen] = useState(false);
   const [markingGps, setMarkingGps] = useState(false);
@@ -73,9 +74,17 @@ export default function DashboardPage() {
   const fetchDashboard = async () => {
     try {
       setLoading(true);
-      const res = await api.get('/dashboard/stats');
-      if (res.data && res.data.success) {
-        setStats(res.data);
+      const [statsRes, alertsRes] = await Promise.allSettled([
+        api.get('/dashboard/stats'),
+        api.get('/location-alerts?limit=5'),
+      ]);
+
+      if (statsRes.status === 'fulfilled' && statsRes.value?.data?.success) {
+        setStats(statsRes.value.data);
+      }
+      if (alertsRes.status === 'fulfilled' && alertsRes.value?.data?.success) {
+        const rawAlerts = alertsRes.value.data.alerts || alertsRes.value.data.data || [];
+        setLocationAlerts(rawAlerts);
       }
     } catch (err) {
       console.error('Error fetching dashboard metrics:', err);
@@ -86,6 +95,8 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchDashboard();
+    const interval = setInterval(fetchDashboard, 15000);
+    return () => clearInterval(interval);
   }, []);
 
   // Student Quick GPS Attendance Mark
@@ -522,21 +533,27 @@ export default function DashboardPage() {
 
             {/* List of Recent Out-of-Location Attendance Messages */}
             <div className="space-y-3">
-              {(stats?.recentLocationAlerts?.length > 0 ? stats.recentLocationAlerts : [
-                {
-                  _id: 'demo-1',
-                  studentName: 'Varshini S',
-                  registerNumber: '23BCS001',
-                  department: { name: 'Computer Science', code: 'CS' },
-                  distanceFromCampusMeters: 2450,
-                  date: 'Today',
-                  time: '09:14 AM',
-                  severity: 'High',
-                  locationStatus: 'Outside permitted location',
-                  attendanceAttemptStatus: 'Rejected - Outside Permitted Location',
-                  status: 'Unread',
-                }
-              ]).map((alert, idx) => {
+              {(
+                locationAlerts?.length > 0
+                  ? locationAlerts
+                  : stats?.recentLocationAlerts?.length > 0
+                  ? stats.recentLocationAlerts
+                  : [
+                      {
+                        _id: 'demo-1',
+                        studentName: 'Varshini S',
+                        registerNumber: '23BCS001',
+                        department: { name: 'Computer Science', code: 'CS' },
+                        distanceFromCampusMeters: 2450,
+                        date: 'Today',
+                        time: '09:14 AM',
+                        severity: 'High',
+                        locationStatus: 'Outside permitted location',
+                        attendanceAttemptStatus: 'Rejected - Outside Permitted Location',
+                        status: 'Unread',
+                      },
+                    ]
+              ).map((alert, idx) => {
                 const distKm = (Number(alert.distanceFromCampusMeters || 2450) / 1000).toFixed(2);
                 return (
                   <div
