@@ -1,27 +1,45 @@
 import axios from 'axios';
 
+export const PRODUCTION_API_URL = 'https://kcas-backend.onrender.com/api';
+export const LOCAL_API_URL = 'http://localhost:5001/api';
+
 export function getEffectiveApiUrl() {
   if (typeof window !== 'undefined') {
+    // 1. Check if user configured a custom backend override in settings
     const customUrl = localStorage.getItem('kcas_backend_url');
-    if (customUrl) {
-      return customUrl.replace(/\/+$/, '');
+    if (customUrl && customUrl.trim()) {
+      return customUrl.trim().replace(/\/+$/, '');
     }
+
+    // 2. Check if running in local development environment
+    const isLocalhost =
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname === '0.0.0.0';
+
+    if (isLocalhost) {
+      const localEnvUrl = process.env.NEXT_PUBLIC_LOCAL_API_URL || process.env.NEXT_PUBLIC_API_URL;
+      return (localEnvUrl || LOCAL_API_URL).replace(/\/+$/, '');
+    }
+
+    // 3. For any remote domain (Netlify, Vercel, other laptops/devices), ALWAYS use Render production backend
+    const prodEnvUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (prodEnvUrl && !prodEnvUrl.includes('localhost') && !prodEnvUrl.includes('127.0.0.1')) {
+      return prodEnvUrl.replace(/\/+$/, '');
+    }
+    return PRODUCTION_API_URL;
   }
 
-  let base = process.env.NEXT_PUBLIC_API_URL;
-  if (!base) {
-    if (typeof window !== 'undefined') {
-      if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-        base = '/api';
-      } else {
-        base = 'http://localhost:5001/api';
-      }
-    } else {
-      base = process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:5001/api';
+  // Server-side / static export build time evaluation
+  if (process.env.NODE_ENV === 'production') {
+    const prodEnvUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (prodEnvUrl && !prodEnvUrl.includes('localhost') && !prodEnvUrl.includes('127.0.0.1')) {
+      return prodEnvUrl.replace(/\/+$/, '');
     }
+    return PRODUCTION_API_URL;
   }
 
-  return base.replace(/\/+$/, '');
+  return (process.env.NEXT_PUBLIC_LOCAL_API_URL || process.env.NEXT_PUBLIC_API_URL || LOCAL_API_URL).replace(/\/+$/, '');
 }
 
 let API_BASE_URL = getEffectiveApiUrl();
@@ -31,7 +49,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 60000, // 60s timeout to allow Render free tier wake-up
+  timeout: 60000, // 60s timeout to allow Render free tier spin-up
 });
 
 // Request interceptor to attach JWT & dynamic baseURL
@@ -70,4 +88,3 @@ api.interceptors.response.use(
 
 export default api;
 export { API_BASE_URL };
-
