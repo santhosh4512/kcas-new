@@ -1,9 +1,11 @@
 /**
  * Email Alert Service
  * Sends automated real-time alert notifications to faculty/mentors when:
- * 1. A student attempts attendance outside the 1000m college geofence radius.
- * 2. A student marked present is detected leaving the campus during college hours (9:00 AM - 2:30 PM).
+ * 1. A student attempts attendance outside the college geofence radius.
+ * 2. A student marked present is detected leaving campus during college hours.
  */
+
+const nodemailer = require('nodemailer');
 
 async function sendGpsAlertEmail({
   studentName,
@@ -19,7 +21,11 @@ async function sendGpsAlertEmail({
   facultyName = 'Assigned Faculty Mentor',
 }) {
   const distanceKm = (Number(distanceMeters) / 1000).toFixed(2);
-  const subject = `⚠️ [KCAS Alert] ${alertType === 'CAMPUS_LEAVE_VIOLATION' ? 'Campus Boundary Violation' : 'Invalid Geofence Attendance Attempt'}: ${studentName} (${registerNumber})`;
+  const subject = `⚠️ [KCAS Alert] ${
+    alertType === 'CAMPUS_LEAVE_VIOLATION'
+      ? 'Campus Boundary Violation'
+      : 'Invalid Geofence Attendance Attempt'
+  }: ${studentName} (${registerNumber})`;
 
   const alertDetails = {
     institution: 'KAMBAN COLLEGE OF ARTS AND SCIENCE FOR WOMEN',
@@ -43,19 +49,35 @@ async function sendGpsAlertEmail({
   console.log('Details:', JSON.stringify(alertDetails, null, 2));
   console.log('==================================================\n');
 
-  // If SMTP is configured in environment, attempt delivery; otherwise logged with zero failure
-  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+  // Check for email credentials (Gmail Service or Custom SMTP)
+  const emailUser = process.env.EMAIL_USER || process.env.SMTP_USER;
+  const emailPass = process.env.EMAIL_PASS || process.env.SMTP_PASS;
+
+  if (emailUser && emailPass) {
     try {
-      const nodemailer = require('nodemailer');
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT || 587,
-        secure: process.env.SMTP_SECURE === 'true',
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        },
-      });
+      let transporter;
+
+      if (process.env.SMTP_HOST) {
+        // Custom SMTP
+        transporter = nodemailer.createTransport({
+          host: process.env.SMTP_HOST,
+          port: Number(process.env.SMTP_PORT) || 587,
+          secure: process.env.SMTP_SECURE === 'true',
+          auth: {
+            user: emailUser,
+            pass: emailPass,
+          },
+        });
+      } else {
+        // Default Gmail Service
+        transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: emailUser,
+            pass: emailPass,
+          },
+        });
+      }
 
       const htmlBody = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #701a28; border-radius: 8px; overflow: hidden;">
@@ -64,7 +86,11 @@ async function sendGpsAlertEmail({
             <p style="margin: 4px 0 0 0; font-size: 12px; color: #e2b86e;">Tiruvannamalai – 606 603 • Geofence Monitoring Alert</p>
           </div>
           <div style="padding: 20px; color: #333333; line-height: 1.6;">
-            <h3 style="color: #c53030; margin-top: 0;">⚠️ ${alertType === 'CAMPUS_LEAVE_VIOLATION' ? 'Student Left Campus During College Hours' : 'Outside Geofence Attendance Attempt'}</h3>
+            <h3 style="color: #c53030; margin-top: 0;">⚠️ ${
+              alertType === 'CAMPUS_LEAVE_VIOLATION'
+                ? 'Student Left Campus During College Hours'
+                : 'Outside Geofence Attendance Attempt'
+            }</h3>
             <p>Dear <strong>${facultyName}</strong>,</p>
             <p>The system detected a location event requiring your attention:</p>
             <table style="width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px;">
@@ -85,15 +111,17 @@ async function sendGpsAlertEmail({
       `;
 
       await transporter.sendMail({
-        from: `"KCAS Geofence Alert System" <${process.env.SMTP_FROM || 'alerts@kcas.edu.in'}>`,
+        from: `"KCAS Geofence Alert System" <${emailUser}>`,
         to: recipientEmail,
         subject,
         html: htmlBody,
       });
-      console.log('✅ Real SMTP Email sent successfully.');
+      console.log(`✅ [SUCCESS] Real Email successfully delivered to ${recipientEmail}`);
     } catch (smtpErr) {
-      console.warn('⚠️ SMTP send error (logged alert safely):', smtpErr.message);
+      console.warn('⚠️ SMTP send error (saved in portal database):', smtpErr.message);
     }
+  } else {
+    console.log('ℹ️ Note: EMAIL_USER / EMAIL_PASS (Gmail App Password) not yet set in .env. Alert successfully stored in portal database.');
   }
 
   return {
