@@ -47,7 +47,7 @@ export default function Header({ setMobileOpen, title, subtitle }) {
     };
 
     fetchAlertCount();
-    const alertInterval = setInterval(fetchAlertCount, 30000);
+    const alertInterval = setInterval(fetchAlertCount, 10000); // Live 10s sync
     return () => clearInterval(alertInterval);
   }, [user]);
 

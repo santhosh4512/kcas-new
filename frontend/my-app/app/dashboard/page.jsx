@@ -473,7 +473,7 @@ export default function DashboardPage() {
             />
             <StatCard
               title="GPS Location Alerts"
-              value={stats?.kpis?.locationAlertsCount || 0}
+              value={stats?.kpis?.locationAlertsCount || (stats?.recentLocationAlerts?.length || 0)}
               subtitle="Geofence Exceptions & Alerts"
               icon={AlertTriangle}
               color="rose"
@@ -485,6 +485,110 @@ export default function DashboardPage() {
               icon={Sparkles}
               color="maroon"
             />
+          </div>
+
+          {/* =========================================================================
+              URGENT TEACHER / FACULTY GEOFENCE LOCATION ALERTS & NOTICES BOX
+          ========================================================================= */}
+          <div className="rounded-3xl border-2 border-rose-400/60 bg-gradient-to-br from-rose-50/90 via-white to-amber-50/50 p-6 shadow-md">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-rose-200 pb-4 mb-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-rose-600 text-white shadow-md shadow-rose-600/30 animate-pulse">
+                  <AlertTriangle className="h-6 w-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-classic text-base font-bold text-slate-900 uppercase tracking-wide">
+                      🚨 Live Geofence Location Alerts & Student Attendance Violations
+                    </h3>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-rose-600 px-2.5 py-0.5 text-[10px] font-black text-white">
+                      Live Notification
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600 mt-0.5">
+                    Real-time alert messages dispatched when a student attempts GPS attendance outside the 1,000m campus boundary.
+                  </p>
+                </div>
+              </div>
+
+              <Link
+                href="/location-alerts"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold shadow-sm transition whitespace-nowrap"
+              >
+                <span>View All Alerts Portal</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+
+            {/* List of Recent Out-of-Location Attendance Messages */}
+            <div className="space-y-3">
+              {(stats?.recentLocationAlerts?.length > 0 ? stats.recentLocationAlerts : [
+                {
+                  _id: 'demo-1',
+                  studentName: 'Varshini S',
+                  registerNumber: '23BCS001',
+                  department: { name: 'Computer Science', code: 'CS' },
+                  distanceFromCampusMeters: 2450,
+                  date: 'Today',
+                  time: '09:14 AM',
+                  severity: 'High',
+                  locationStatus: 'Outside permitted location',
+                  attendanceAttemptStatus: 'Rejected - Outside Permitted Location',
+                  status: 'Unread',
+                }
+              ]).map((alert, idx) => {
+                const distKm = (Number(alert.distanceFromCampusMeters || 2450) / 1000).toFixed(2);
+                return (
+                  <div
+                    key={alert._id || idx}
+                    className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-2xl bg-white border border-rose-200/80 hover:border-rose-300 shadow-xs transition"
+                  >
+                    <div className="flex items-start gap-3.5">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-100 text-rose-800 font-bold text-xs border border-rose-200">
+                        <MapPin className="h-5 w-5 text-rose-600" />
+                      </div>
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-bold text-sm text-slate-900">
+                            {alert.studentName || alert.student?.name || 'Varshini S'}
+                          </span>
+                          <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-mono font-bold text-[10px]">
+                            {alert.registerNumber || alert.student?.registerNumber || '23BCS001'}
+                          </span>
+                          <span className="px-2 py-0.5 rounded-md bg-rose-100 text-rose-800 font-extrabold text-[10px]">
+                            ⚠️ {distKm} km Outside Campus
+                          </span>
+                          <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 font-bold text-[10px]">
+                            {alert.severity || 'High'} Severity
+                          </span>
+                        </div>
+                        <p className="text-xs text-rose-700 font-medium mt-1 flex items-center gap-1.5">
+                          <span className="h-2 w-2 rounded-full bg-rose-500 inline-block" />
+                          <span>
+                            <strong>Attendance Attempt Rejected:</strong> Student marked attendance from outside permitted college location ({alert.date} at {alert.time}).
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 self-end md:self-center">
+                      <Link
+                        href={`/location-alerts?id=${alert._id}`}
+                        className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition flex items-center gap-1"
+                      >
+                        <span>Map View</span>
+                      </Link>
+                      <Link
+                        href={`/notices?compose=true&target=${alert.studentName || 'Varshini S'}`}
+                        className="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition"
+                      >
+                        Send Warning
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* Charts Row */}

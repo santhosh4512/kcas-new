@@ -150,8 +150,8 @@ exports.getDashboardStats = async (req, res, next) => {
       studentsWithTalent,
       allMarks,
       allAttendanceDocs,
-      todayAttendanceDocs,
       locationAlertsCount,
+      recentLocationAlerts,
       activeWarningsCount,
       upcomingEvents,
       activeNotices,
@@ -165,8 +165,12 @@ exports.getDashboardStats = async (req, res, next) => {
       TalentScore.countDocuments({ highestScore: { $gt: 0 } }),
       Mark.find({}, 'totalMark percentage resultStatus'),
       Attendance.find({}, 'totalStudents presentCount absentCount date records'),
-      Attendance.find({ date: todayDate }),
       LocationAlert.countDocuments({ status: 'Unread' }),
+      LocationAlert.find({ status: { $ne: 'Resolved' } })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .populate('student', 'name registerNumber profilePhoto avatar department phone parentPhone')
+        .populate('department', 'name code'),
       WarningAlert.countDocuments({ status: { $ne: 'Resolved' } }),
       Event.find({ eventDate: { $gte: todayDate } }).sort({ eventDate: 1 }).limit(4),
       Notice.find({ status: 'Active' }).sort({ createdAt: -1 }).limit(4),
@@ -332,6 +336,7 @@ exports.getDashboardStats = async (req, res, next) => {
       },
       recentActivity,
       recentStudents,
+      recentLocationAlerts: recentLocationAlerts || [],
       upcomingEvents,
       activeNotices,
       recentReports,
